@@ -1,3 +1,4 @@
+
 from pokemon_data import pokemon
 from move_data import moves
 from stat_stages import stat_modifiers
@@ -14,6 +15,10 @@ class Pokemon:
         self.stats = pokemon[name]["stats"]
         self.max_hp = math.floor((self.stats["HP"] + random.uniform(0, 15)) * 2 * level / 100) + level + 10
         self.current_hp = self.max_hp
+        self.attack_stat = math.floor((self.stats["Attack"] + random.uniform(0, 15)) * 2 * level / 100) + 5
+        self.defense_stat = math.floor((self.stats["Defense"] + random.uniform(0, 15)) * 2 * level / 100) + 5
+        self.special_stat = math.floor((self.stats["Special"] + random.uniform(0, 15)) * 2 * level / 100) + 5
+        self.speed_stat = math.floor((self.stats["Speed"] + random.uniform(0, 15)) * 2 * level / 100) + 5
         self.stat_stages = {
             "Attack": 0,
             "Defense": 0,
@@ -25,13 +30,26 @@ class Pokemon:
             move: moves[move]["pp"] for move in self.moveset
         }
     
-    def select_move(self):
+    def random_move(self):
         valid_moves = [move for move in self.moveset if self.move_pp[move] > 0]
         if not valid_moves:
             return "Struggle"
         move = random.choice(valid_moves)
         self.move_pp[move] -= 1
         return move
+    
+    def move_prompt(self):
+        while True:
+            valid_moves = [move for move in self.moveset if self.move_pp[move] > 0]
+            for i, move in enumerate(valid_moves):
+                print(f"{i+1}. {move} - {moves[move]['pp']} PP")
+            move = int(input(f"Choose a move for {self.name}: "))
+            if move in range(1, len(valid_moves) + 1):
+                self.move_pp[valid_moves[move - 1]] -= 1
+                print()
+                return valid_moves[move - 1]
+            else:
+                print("Invalid move selection. Please try again.\n")
 
 class Battle:
     def __init__(self, pokemon1, pokemon2, trainer1, trainer2):
@@ -65,22 +83,42 @@ class Battle:
         print(f"Battle started between {self.trainer1} and {self.trainer2}!\n")
         self.display_health_bars()
         print()
+        print(self.pokemon1.attack_stat, self.pokemon1.defense_stat, self.pokemon1.special_stat, self.pokemon1.speed_stat)
+        print(self.pokemon2.attack_stat, self.pokemon2.defense_stat, self.pokemon2.special_stat, self.pokemon2.speed_stat)
+        print()
         while self.pokemon1.current_hp > 0 and self.pokemon2.current_hp > 0:
             self.turn += 1
-            print(f"Turn {self.turn}:")
+            print(f"Turn {self.turn}:\n")
+
+            # Determine which pokemon goes first
             if self.pokemon1.stats["Speed"] > self.pokemon2.stats["Speed"]:
-                if self.execute_move(self.pokemon1.select_move(), self.pokemon1, self.pokemon2): break
-                if self.execute_move(self.pokemon2.select_move(), self.pokemon2, self.pokemon1): break
+                first = 1
             elif self.pokemon1.stats["Speed"] < self.pokemon2.stats["Speed"]:
-                if self.execute_move(self.pokemon2.select_move(), self.pokemon2, self.pokemon1): break
-                if self.execute_move(self.pokemon1.select_move(), self.pokemon1, self.pokemon2): break
+                first = 2
             else:
                 if random.random() < 0.5:
-                    if self.execute_move(self.pokemon1.select_move(), self.pokemon1, self.pokemon2): break
-                    if self.execute_move(self.pokemon2.select_move(), self.pokemon2, self.pokemon1): break
+                    first = 1
                 else:
-                    if self.execute_move(self.pokemon2.select_move(), self.pokemon2, self.pokemon1): break
-                    if self.execute_move(self.pokemon1.select_move(), self.pokemon1, self.pokemon2): break
+                    first = 2
+
+            # Move selection
+            if self.trainer1 == "AI":
+                pokemon1_move = self.pokemon1.random_move()
+            else:
+                pokemon1_move = self.pokemon1.move_prompt()
+            if self.trainer2 == "AI":
+                pokemon2_move = self.pokemon2.random_move()
+            else:
+                pokemon2_move = self.pokemon2.move_prompt()
+
+            # Move execution
+            if first == 1:
+                if self.execute_move(pokemon1_move, self.pokemon1, self.pokemon2): break
+                if self.execute_move(pokemon2_move, self.pokemon2, self.pokemon1): break
+            else:
+                if self.execute_move(pokemon2_move, self.pokemon2, self.pokemon1): break
+                if self.execute_move(pokemon1_move, self.pokemon1, self.pokemon2): break
+
             print()
             print(f"After turn {self.turn}:")
             self.display_health_bars()
@@ -96,20 +134,20 @@ class Battle:
     def execute_move(self, move, attacker, defender):
         move_data = moves[move]
         print(f"{attacker.name} used {move}!")
-        if random.random() * 100 >= move_data["accuracy"]:
-            print(f"The attack missed!\n")
+        if random.randint(0, 255) > move_data["accuracy"] * 255:
+            print(f"But, it failed!\n")
             return False
         if move_data["category"] == "Physical":
             # Separate calculation depending on whether a critical hit occurred
             crit_multiplier = self.crit(attacker)
             if crit_multiplier > 1:
                 # Critical: ignore attacker's and defender's stat stage modifiers
-                damage = math.ceil((((2 * attacker.level * crit_multiplier) * move_data["power"] * (attacker.stats["Attack"] / defender.stats["Defense"]) / 50 + 2) * random.uniform(85, 100) / 100))
+                damage = math.floor(math.floor((((2 * attacker.level * crit_multiplier) / 5 + 2) * move_data["power"] * (attacker.attack_stat / defender.defense_stat) / 50) + 2) * random.randint(217, 255) / 255)
             else:
                 # Non-critical: include stat modifiers as normal
-                atk = attacker.stats["Attack"] * stat_modifiers[attacker.stat_stages["Attack"]]
-                deff = defender.stats["Defense"] * stat_modifiers[defender.stat_stages["Defense"]]
-                damage = math.ceil((((2 * attacker.level) * move_data["power"] * (atk / deff) / 50 + 2) * random.uniform(85, 100) / 100))
+                atk = attacker.attack_stat * stat_modifiers[attacker.stat_stages["Attack"]]
+                deff = defender.defense_stat * stat_modifiers[defender.stat_stages["Defense"]]
+                damage = math.floor(math.floor((((2 * attacker.level) / 5 + 2) * move_data["power"] * (atk / deff) / 50) + 2) * random.randint(217, 255) / 255)
             defender.current_hp = max(0, defender.current_hp - damage)
             if defender.current_hp <= 0:
                 print(f"{defender.name} fainted!")
@@ -129,6 +167,3 @@ class Battle:
             print(f"A critical hit!")
             return 2
         return 1
-
-battle = Battle(Pokemon("Bulbasaur", 5), Pokemon("Charmander", 5), "Ash", "Gary")
-battle.start()

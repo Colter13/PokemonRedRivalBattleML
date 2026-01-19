@@ -3,7 +3,7 @@ moves = {
         "type": "Normal",
         "category": "Physical",
         "power": 35,
-        "accuracy": 95,
+        "accuracy": .95,
         "pp": 35,
         "effect": None
     },
@@ -11,7 +11,7 @@ moves = {
         "type": "Normal",
         "category": "Physical",
         "power": 40,
-        "accuracy": 100,
+        "accuracy": 1,
         "pp": 35,
         "effect": None
     },
@@ -19,7 +19,7 @@ moves = {
         "type": "Normal",
         "category": "Status",
         "power": None,
-        "accuracy": 100,
+        "accuracy": 1,
         "pp": 40,
         "effect": {
             "stat": "Attack",
@@ -31,7 +31,7 @@ moves = {
         "type": "Normal",
         "category": "Status",
         "power": None,
-        "accuracy": 100,
+        "accuracy": 1,
         "pp": 30,
         "effect": {
             "stat": "Defense",
@@ -43,7 +43,7 @@ moves = {
         "type": "Normal",
         "category": "Physical",
         "power": 50,
-        "accuracy": 100,
+        "accuracy": 1,
         "pp": 10,
         "effect": None
     }
