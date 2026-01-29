@@ -58,6 +58,7 @@ class Battle:
         self.pokemon1 = pokemon1
         self.pokemon2 = pokemon2
         self.turn = 0
+        self.finished = False
 
     def health_bar(self, current_hp, max_hp, bar_length=20):
         ratio = current_hp / max_hp
@@ -79,16 +80,23 @@ class Battle:
         print(f"{self.pokemon1.name:<{name_width}}: {self.health_bar(self.pokemon1.current_hp, self.pokemon1.max_hp)}")
         print(f"{self.pokemon2.name:<{name_width}}: {self.health_bar(self.pokemon2.current_hp, self.pokemon2.max_hp)}")
 
-    def start(self):
+    def whole_battle(self):
         print(f"Battle started between {self.trainer1} and {self.trainer2}!\n")
         self.display_health_bars()
-        print()
-        print(self.pokemon1.attack_stat, self.pokemon1.defense_stat, self.pokemon1.special_stat, self.pokemon1.speed_stat)
-        print(self.pokemon2.attack_stat, self.pokemon2.defense_stat, self.pokemon2.special_stat, self.pokemon2.speed_stat)
         print()
         while self.pokemon1.current_hp > 0 and self.pokemon2.current_hp > 0:
             self.turn += 1
             print(f"Turn {self.turn}:\n")
+
+            # Move selection
+            if self.trainer1 == "AI":
+                pokemon1_move = self.pokemon1.random_move()
+            else:
+                pokemon1_move = self.pokemon1.move_prompt()
+            if self.trainer2 == "AI":
+                pokemon2_move = self.pokemon2.random_move()
+            else:
+                pokemon2_move = self.pokemon2.move_prompt()
 
             # Determine which pokemon goes first
             if self.pokemon1.stats["Speed"] > self.pokemon2.stats["Speed"]:
@@ -100,16 +108,6 @@ class Battle:
                     first = 1
                 else:
                     first = 2
-
-            # Move selection
-            if self.trainer1 == "AI":
-                pokemon1_move = self.pokemon1.random_move()
-            else:
-                pokemon1_move = self.pokemon1.move_prompt()
-            if self.trainer2 == "AI":
-                pokemon2_move = self.pokemon2.random_move()
-            else:
-                pokemon2_move = self.pokemon2.move_prompt()
 
             # Move execution
             if first == 1:
@@ -123,6 +121,7 @@ class Battle:
             print(f"After turn {self.turn}:")
             self.display_health_bars()
             print()
+            
         print("Final status:")
         self.display_health_bars()
         print()
