@@ -1,6 +1,7 @@
-from battle import Battle, Pokemon
+from battle import Battle
+from pokemon import Pokemon
 
-battle = Battle(Pokemon("Bulbasaur", 5), Pokemon("Charmander", 5), "Physical", "Physical")
+battle = Battle("Bulbasaur", "Charmander", "Physical", "Physical")
 
 pokemon1_wins = 0
 pokemon2_wins = 0
