@@ -51,6 +51,15 @@ class Pokemon:
             else:
                 print("Invalid move selection. Please try again.\n")
 
+    def regenerate_stats(self):
+        # randomly regenerates pokemon's stats
+        self.max_hp = math.floor((self.stats["HP"] + random.uniform(0, 15)) * 2 * self.level / 100) + self.level + 10
+        self.current_hp = self.max_hp
+        self.attack_stat = math.floor((self.stats["Attack"] + random.uniform(0, 15)) * 2 * self.level / 100) + 5
+        self.defense_stat = math.floor((self.stats["Defense"] + random.uniform(0, 15)) * 2 * self.level / 100) + 5
+        self.special_stat = math.floor((self.stats["Special"] + random.uniform(0, 15)) * 2 * self.level / 100) + 5
+        self.speed_stat = math.floor((self.stats["Speed"] + random.uniform(0, 15)) * 2 * self.level / 100) + 5
+
 class Battle:
     def __init__(self, pokemon1, pokemon2, trainer1, trainer2):
         self.trainer1 = trainer1
@@ -189,7 +198,7 @@ class Battle:
             return 2
         return 1
 
-    def reset(self):
+    def reset(self, stat_reset=True):
         self.pokemon1.current_hp = self.pokemon1.max_hp
         self.pokemon2.current_hp = self.pokemon2.max_hp
         self.pokemon1.stat_stages = {
@@ -213,3 +222,6 @@ class Battle:
             move: moves[move]["pp"] for move in self.pokemon2.moveset
         }
         self.turn = 0
+        if stat_reset:
+            self.pokemon1.regenerate_stats()
+            self.pokemon2.regenerate_stats()
