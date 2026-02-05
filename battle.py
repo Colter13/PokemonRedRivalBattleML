@@ -58,7 +58,7 @@ class Battle:
         self.pokemon1 = pokemon1
         self.pokemon2 = pokemon2
         self.turn = 0
-        self.finished = False
+        self.verbose = False
 
     def health_bar(self, current_hp, max_hp, bar_length=20):
         ratio = current_hp / max_hp
@@ -80,21 +80,28 @@ class Battle:
         print(f"{self.pokemon1.name:<{name_width}}: {self.health_bar(self.pokemon1.current_hp, self.pokemon1.max_hp)}")
         print(f"{self.pokemon2.name:<{name_width}}: {self.health_bar(self.pokemon2.current_hp, self.pokemon2.max_hp)}")
 
-    def whole_battle(self):
-        print(f"Battle started between {self.trainer1} and {self.trainer2}!\n")
-        self.display_health_bars()
-        print()
+    def whole_battle(self, verbose=False):
+        self.verbose = verbose
+        if self.verbose:
+            print(f"Battle started between {self.trainer1} and {self.trainer2}!\n")
+            self.display_health_bars()
+            print()
         while self.pokemon1.current_hp > 0 and self.pokemon2.current_hp > 0:
             self.turn += 1
-            print(f"Turn {self.turn}:\n")
+            if self.verbose:
+                print(f"Turn {self.turn}:\n")
 
             # Move selection
             if self.trainer1 == "AI":
                 pokemon1_move = self.pokemon1.random_move()
+            elif self.trainer1 == "Physical":
+                pokemon1_move = self.pokemon1.moveset[0]
             else:
                 pokemon1_move = self.pokemon1.move_prompt()
             if self.trainer2 == "AI":
                 pokemon2_move = self.pokemon2.random_move()
+            elif self.trainer2 == "Physical":
+                pokemon2_move = self.pokemon2.moveset[0]
             else:
                 pokemon2_move = self.pokemon2.move_prompt()
 
@@ -117,24 +124,34 @@ class Battle:
                 if self.execute_move(pokemon2_move, self.pokemon2, self.pokemon1): break
                 if self.execute_move(pokemon1_move, self.pokemon1, self.pokemon2): break
 
-            print()
-            print(f"After turn {self.turn}:")
+            if self.verbose:
+                print()
+            if self.verbose:
+                print(f"After turn {self.turn}:")
+            if self.verbose:
+                self.display_health_bars()
+                print()
+            
+        if self.verbose:
+            print("Final status:")
             self.display_health_bars()
             print()
-            
-        print("Final status:")
-        self.display_health_bars()
-        print()
         if self.pokemon1.current_hp > 0:
-            print(f"{self.pokemon1.name} wins!")
+            if self.verbose:
+                print(f"{self.pokemon1.name} wins!")
+            return True
         else:
-            print(f"{self.pokemon2.name} wins!")
+            if self.verbose:
+                print(f"{self.pokemon2.name} wins!")
+            return False
     
     def execute_move(self, move, attacker, defender):
         move_data = moves[move]
-        print(f"{attacker.name} used {move}!")
+        if self.verbose:
+            print(f"{attacker.name} used {move}!")
         if random.randint(0, 255) > move_data["accuracy"] * 255:
-            print(f"But, it failed!\n")
+            if self.verbose:
+                print(f"But, it failed!\n")
             return False
         if move_data["category"] == "Physical":
             # Separate calculation depending on whether a critical hit occurred
@@ -149,20 +166,50 @@ class Battle:
                 damage = math.floor(math.floor((((2 * attacker.level) / 5 + 2) * move_data["power"] * (atk / deff) / 50) + 2) * random.randint(217, 255) / 255)
             defender.current_hp = max(0, defender.current_hp - damage)
             if defender.current_hp <= 0:
-                print(f"{defender.name} fainted!")
+                if self.verbose:
+                    print(f"{defender.name} fainted!")
                 return True
-            print(f"{defender.name} took {damage} damage and has {defender.current_hp} HP left.")
+            if self.verbose:
+                print(f"{defender.name} took {damage} damage and has {defender.current_hp} HP left.")
         elif move_data["category"] == "Status":
             affected_stat = move_data["effect"]["stat"]
             if defender.stat_stages[affected_stat] > -6:
                 defender.stat_stages[affected_stat] += move_data["effect"]["stages"]
-                print(f"{defender.name} {affected_stat} stage changed to {defender.stat_stages[affected_stat]}")
+                if self.verbose:
+                    print(f"{defender.name} {affected_stat} stage changed to {defender.stat_stages[affected_stat]}")
             else:
-                print(f"Nothing happened.")
+                if self.verbose:
+                    print(f"Nothing happened.")
         return False
 
     def crit(self, attacker):
         if random.random() < attacker.stats["Speed"] / 512:
-            print(f"A critical hit!")
+            if self.verbose:
+                print(f"A critical hit!")
             return 2
         return 1
+
+    def reset(self):
+        self.pokemon1.current_hp = self.pokemon1.max_hp
+        self.pokemon2.current_hp = self.pokemon2.max_hp
+        self.pokemon1.stat_stages = {
+            "Attack": 0,
+            "Defense": 0,
+            "Special Attack": 0,
+            "Special Defense": 0,
+            "Speed": 0
+        }
+        self.pokemon2.stat_stages = {
+            "Attack": 0,
+            "Defense": 0,
+            "Special Attack": 0,
+            "Special Defense": 0,
+            "Speed": 0
+        }
+        self.pokemon1.move_pp = {
+            move: moves[move]["pp"] for move in self.pokemon1.moveset
+        }
+        self.pokemon2.move_pp = {
+            move: moves[move]["pp"] for move in self.pokemon2.moveset
+        }
+        self.turn = 0
