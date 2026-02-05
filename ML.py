@@ -1,17 +1,17 @@
 from battle import Battle, Pokemon
 
-battle = Battle(Pokemon("Bulbasaur", 5), Pokemon("Charmander", 5), "AI", "Physical")
+battle = Battle(Pokemon("Bulbasaur", 5), Pokemon("Charmander", 5), "Physical", "Physical")
 
-Bulbasaur_wins = 0
-Charmander_wins = 0
+pokemon1_wins = 0
+pokemon2_wins = 0
 for i in range(1000):
     result = battle.whole_battle(verbose=False)
-    battle.reset()
+    battle.reset(stat_reset=False)
     if result:
-        Bulbasaur_wins += 1
+        pokemon1_wins += 1
     else:
-        Charmander_wins += 1
-print(f"Bulbasaur wins: {Bulbasaur_wins} times")
-print(f"Charmander wins: {Charmander_wins} times")
-print(f"Total battles: {Bulbasaur_wins + Charmander_wins}")
-print(f"Win percentage: {Bulbasaur_wins / (Bulbasaur_wins + Charmander_wins) * 100}%")
+        pokemon2_wins += 1
+print(f"{battle.pokemon1.name} wins: {pokemon1_wins} times")
+print(f"{battle.pokemon2.name} wins: {pokemon2_wins} times")
+print(f"Total battles: {pokemon1_wins + pokemon2_wins}")
+print(f"Win percentage: {pokemon1_wins / (pokemon1_wins + pokemon2_wins) * 100}%")
