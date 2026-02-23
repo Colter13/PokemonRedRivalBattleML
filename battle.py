@@ -40,50 +40,7 @@ class Battle:
             self.display_health_bars()
             print()
         while self.pokemon1.current_hp > 0 and self.pokemon2.current_hp > 0:
-            self.turn += 1
-            if self.verbose:
-                print(f"Turn {self.turn}:\n")
-
-            # Move selection
-            if self.trainer1 == "AI":
-                pokemon1_move = self.pokemon1.random_move()
-            elif self.trainer1 == "Physical":
-                pokemon1_move = self.pokemon1.moveset[0]
-            else:
-                pokemon1_move = self.pokemon1.move_prompt()
-            if self.trainer2 == "AI":
-                pokemon2_move = self.pokemon2.random_move()
-            elif self.trainer2 == "Physical":
-                pokemon2_move = self.pokemon2.moveset[0]
-            else:
-                pokemon2_move = self.pokemon2.move_prompt()
-
-            # Determine which pokemon goes first
-            if self.pokemon1.stats["Speed"] > self.pokemon2.stats["Speed"]:
-                first = 1
-            elif self.pokemon1.stats["Speed"] < self.pokemon2.stats["Speed"]:
-                first = 2
-            else:
-                if random.random() < 0.5:
-                    first = 1
-                else:
-                    first = 2
-
-            # Move execution
-            if first == 1:
-                if self.execute_move(pokemon1_move, self.pokemon1, self.pokemon2): break
-                if self.execute_move(pokemon2_move, self.pokemon2, self.pokemon1): break
-            else:
-                if self.execute_move(pokemon2_move, self.pokemon2, self.pokemon1): break
-                if self.execute_move(pokemon1_move, self.pokemon1, self.pokemon2): break
-
-            if self.verbose:
-                print()
-            if self.verbose:
-                print(f"After turn {self.turn}:")
-            if self.verbose:
-                self.display_health_bars()
-                print()
+            if self.step(): break
             
         if self.verbose:
             print("Final status:")
@@ -169,3 +126,50 @@ class Battle:
         if stat_reset:
             self.pokemon1.regenerate_stats()
             self.pokemon2.regenerate_stats()
+    
+    def step(self, pokemon1_move=None):
+        self.turn += 1
+        if self.verbose:
+            print(f"Turn {self.turn}:\n")
+
+        # Pokemon 1 move selection
+        if pokemon1_move is None:
+            if self.trainer1 == "AI":
+                pokemon1_move = self.pokemon1.random_move()
+            elif self.trainer1 == "Physical":
+                pokemon1_move = self.pokemon1.moveset[0]
+            else:
+                pokemon1_move = self.pokemon1.move_prompt()
+
+        # Pokemon 2 move selection
+        if self.trainer2 == "AI":
+            pokemon2_move = self.pokemon2.random_move()
+        elif self.trainer2 == "Physical":
+            pokemon2_move = self.pokemon2.moveset[0]
+        else:
+            pokemon2_move = self.pokemon2.move_prompt()
+
+        # Determine which pokemon goes first
+        if self.pokemon1.stats["Speed"] > self.pokemon2.stats["Speed"]:
+            first = 1
+        elif self.pokemon1.stats["Speed"] < self.pokemon2.stats["Speed"]:
+            first = 2
+        else:
+            if random.random() < 0.5:
+                first = 1
+            else:
+                first = 2
+
+        # Move execution
+        if first == 1:
+            if self.execute_move(pokemon1_move, self.pokemon1, self.pokemon2): return True
+            if self.execute_move(pokemon2_move, self.pokemon2, self.pokemon1): return True
+        else:
+            if self.execute_move(pokemon2_move, self.pokemon2, self.pokemon1): return True
+            if self.execute_move(pokemon1_move, self.pokemon1, self.pokemon2): return True
+        if self.verbose:
+            print()
+            print(f"After turn {self.turn}:")
+            self.display_health_bars()
+            print()
+        return False
