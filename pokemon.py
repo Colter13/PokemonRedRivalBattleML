@@ -11,12 +11,12 @@ class Pokemon:
         self.level = level
         self.moveset = pokemon[name]["moveset"]
         self.stats = pokemon[name]["stats"]
-        self.max_hp = math.floor((self.stats["HP"] + random.uniform(0, 15)) * 2 * level / 100) + level + 10
+        self.max_hp = math.floor((self.stats["HP"] + random.randint(0, 15)) * 2 * level / 100) + level + 10
         self.current_hp = self.max_hp
-        self.attack_stat = math.floor((self.stats["Attack"] + random.uniform(0, 15)) * 2 * level / 100) + 5
-        self.defense_stat = math.floor((self.stats["Defense"] + random.uniform(0, 15)) * 2 * level / 100) + 5
-        self.special_stat = math.floor((self.stats["Special"] + random.uniform(0, 15)) * 2 * level / 100) + 5
-        self.speed_stat = math.floor((self.stats["Speed"] + random.uniform(0, 15)) * 2 * level / 100) + 5
+        self.attack_stat = math.floor((self.stats["Attack"] + random.randint(0, 15)) * 2 * level / 100) + 5
+        self.defense_stat = math.floor((self.stats["Defense"] + random.randint(0, 15)) * 2 * level / 100) + 5
+        self.special_stat = math.floor((self.stats["Special"] + random.randint(0, 15)) * 2 * level / 100) + 5
+        self.speed_stat = math.floor((self.stats["Speed"] + random.randint(0, 15)) * 2 * level / 100) + 5
         self.stat_stages = {
             "Attack": 0,
             "Defense": 0,
@@ -48,3 +48,11 @@ class Pokemon:
                 return valid_moves[move - 1]
             else:
                 print("Invalid move selection. Please try again.\n")
+    
+    def regenerate_stats(self):
+        self.max_hp = math.floor((self.stats["HP"] + random.randint(0, 15)) * 2 * self.level / 100) + self.level + 10
+        self.current_hp = self.max_hp
+        self.attack_stat = math.floor((self.stats["Attack"] + random.randint(0, 15)) * 2 * self.level / 100) + 5
+        self.defense_stat = math.floor((self.stats["Defense"] + random.randint(0, 15)) * 2 * self.level / 100) + 5
+        self.special_stat = math.floor((self.stats["Special"] + random.randint(0, 15)) * 2 * self.level / 100) + 5
+        self.speed_stat = math.floor((self.stats["Speed"] + random.randint(0, 15)) * 2 * self.level / 100) + 5
